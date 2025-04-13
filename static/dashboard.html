@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SubTrack - Gerencie suas assinaturas e pagamentos recorrentes em um só lugar. Controle seus gastos mensais de forma inteligente.">
+    <meta name="keywords" content="assinaturas, controle financeiro, pagamentos recorrentes, gestão de gastos, finanças pessoais">
+    <meta name="author" content="SubTrack">
+    <meta property="og:title" content="SubTrack - Dashboard de Assinaturas">
+    <meta property="og:description" content="Gerencie suas assinaturas e pagamentos recorrentes em um só lugar.">
+    <meta property="og:type" content="website">
+    <title>Dashboard - SubTrack | Controle de Assinaturas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .subscription-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .subscription-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="./index.html" class="text-2xl font-bold text-blue-600 hover:text-blue-700 transition duration-150">SubTrack</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">Olá, Usuário</span>
+                    <button class="text-gray-600 hover:text-gray-900" aria-label="Notificações">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <article class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="text-gray-500 text-sm font-medium">Total Mensal</h2>
+                <p class="text-3xl font-bold text-gray-900 mt-2" id="total-mensal">R$ 0,00</p>
+            </article>
+            <article class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="text-gray-500 text-sm font-medium">Próximos Pagamentos</h2>
+                <p class="text-3xl font-bold text-gray-900 mt-2" id="proximos-pagamentos">0</p>
+            </article>
+            <article class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="text-gray-500 text-sm font-medium">Total de Assinaturas</h2>
+                <p class="text-3xl font-bold text-gray-900 mt-2" id="total-assinaturas">0</p>
+            </article>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-xl font-semibold text-gray-900">Minhas Assinaturas</h1>
+                <button id="add-subscription-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition duration-150" aria-label="Adicionar nova assinatura">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>Nova Assinatura</span>
+                </button>
+            </div>
+
+            <div id="subscription-list" class="space-y-4" role="list">
+                <p class="text-gray-500 text-center py-8">Nenhuma assinatura cadastrada ainda.</p>
+            </div>
+        </section>
+
+        <dialog id="add-subscription-form" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Nova Assinatura</h2>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-gray-500" aria-label="Fechar modal">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form id="subscription-form" class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome do Serviço</label>
+                        <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: Netflix, Spotify" required>
+                    </div>
+                    <div>
+                        <label for="value" class="block text-sm font-medium text-gray-700 mb-1">Valor Mensal</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">R$</span>
+                            <input type="number" id="value" name="value" step="0.01" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="0,00" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="billing_date" class="block text-sm font-medium text-gray-700 mb-1">Data de Cobrança</label>
+                        <input type="date" id="billing_date" name="billing_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <select id="type" name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="streaming">🎬 Streaming (Netflix, Prime, Disney+)</option>
+                            <option value="musica">🎵 Música (Spotify, Deezer, Apple Music)</option>
+                            <option value="jogos">🎮 Jogos (Xbox Game Pass, PS Plus, Nintendo Online)</option>
+                            <option value="produtividade">💼 Produtividade (Office 365, Google Workspace)</option>
+                            <option value="armazenamento">💾 Armazenamento (Google Drive, iCloud, Dropbox)</option>
+                            <option value="educacao">📚 Educação (Coursera, Udemy, Alura)</option>
+                            <option value="saude">🏥 Saúde (Gympass, TotalPass, Smart Fit)</option>
+                            <option value="alimentacao">🍕 Alimentação (iFood Prime, Uber Eats Pass)</option>
+                            <option value="transporte">🚗 Transporte (Uber One, 99 Pro)</option>
+                            <option value="servicos_essenciais">🏠 Serviços Essenciais (Água, Luz, Internet)</option>
+                            <option value="outros">📱 Outros</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancel-form-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <dialog id="delete-confirmation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Confirmar Exclusão</h2>
+                    <button id="close-delete-modal-btn" class="text-gray-400 hover:text-gray-500" aria-label="Fechar modal">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-6">Tem certeza que deseja excluir esta assinatura? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancel-delete-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
+                </div>
+            </div>
+        </dialog>
+    </main>
+
+    <footer class="bg-white mt-8 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-500">
+                <p>© 2024 SubTrack. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addSubscriptionBtn = document.getElementById('add-subscription-btn');
+            const addSubscriptionForm = document.getElementById('add-subscription-form');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const cancelFormBtn = document.getElementById('cancel-form-btn');
+            const form = document.getElementById('subscription-form');
+            const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
+            const closeDeleteModalBtn = document.getElementById('close-delete-modal-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            let subscriptionToDelete = null;
+
+            // Função para mostrar notificações
+            function showNotification(message, type = 'success') {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: type === 'success' ? "#4CAF50" : "#F44336",
+                    stopOnFocus: true
+                }).showToast();
+            }
+
+            addSubscriptionBtn.addEventListener('click', () => {
+                addSubscriptionForm.classList.remove('hidden');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                addSubscriptionForm.classList.add('hidden');
+            });
+
+            cancelFormBtn.addEventListener('click', () => {
+                addSubscriptionForm.classList.add('hidden');
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const data = {
+                    name: form.name.value,
+                    value: parseFloat(form.value.value),
+                    billing_date: form.billing_date.value,
+                    type: form.type.value
+                };
+
+                try {
+                    const response = await fetch('/api/subscriptions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        addSubscriptionForm.classList.add('hidden');
+                        form.reset();
+                        showNotification('Assinatura adicionada com sucesso!');
+                        carregarAssinaturas();
+                    } else {
+                        showNotification('Erro ao salvar assinatura.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar requisição:', error);
+                    showNotification('Erro inesperado ao salvar assinatura.', 'error');
+                }
+            });
+
+            // Event Listener para botões de deletar
+            document.addEventListener('click', async (e) => {
+                if (e.target.closest('.delete-btn')) {
+                    subscriptionToDelete = e.target.closest('.delete-btn').dataset.id;
+                    deleteConfirmationModal.classList.remove('hidden');
+                }
+            });
+
+            // Event Listeners para o modal de confirmação de exclusão
+            closeDeleteModalBtn.addEventListener('click', () => {
+                deleteConfirmationModal.classList.add('hidden');
+                subscriptionToDelete = null;
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteConfirmationModal.classList.add('hidden');
+                subscriptionToDelete = null;
+            });
+
+            confirmDeleteBtn.addEventListener('click', async () => {
+                if (subscriptionToDelete) {
+                    try {
+                        const response = await fetch(`/api/subscriptions/${subscriptionToDelete}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        if (response.ok) {
+                            showNotification('Assinatura excluída com sucesso!');
+                            carregarAssinaturas();
+                        } else {
+                            showNotification('Erro ao excluir assinatura.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao excluir assinatura:', error);
+                        showNotification('Erro ao excluir assinatura.', 'error');
+                    }
+                    deleteConfirmationModal.classList.add('hidden');
+                    subscriptionToDelete = null;
+                }
+            });
+        });
+
+        async function carregarAssinaturas() {
+            const lista = document.getElementById('subscription-list');
+            lista.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/subscriptions');
+                if (!response.ok) throw new Error('Erro ao buscar assinaturas');
+
+                const assinaturas = await response.json();
+                let total = 0;
+                let proximosPagamentos = 0;
+
+                if (assinaturas.length === 0) {
+                    lista.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma assinatura cadastrada ainda.</p>';
+                    return;
+                }
+
+                assinaturas.forEach(sub => {
+                    total += sub.value;
+                    const hoje = new Date();
+                    const dataCobranca = new Date(sub.billing_date);
+                    if (dataCobranca >= hoje) proximosPagamentos++;
+
+                    const item = document.createElement('div');
+                    item.className = 'subscription-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md';
+                    item.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">${sub.name}</h3>
+                                <p class="text-sm text-gray-500">${sub.type}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-900">R$ ${Number(sub.value || 0).toFixed(2)}</p>
+                                <p class="text-sm text-gray-500">Próxima cobrança: ${new Date(sub.billing_date).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-2 mt-4">
+                            <button class="delete-btn px-3 py-1 text-sm text-red-600 hover:text-red-700" data-id="${sub.id}">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    lista.appendChild(item);
+                });
+
+                document.getElementById('total-mensal').textContent = `R$ ${total.toFixed(2)}`;
+                document.getElementById('proximos-pagamentos').textContent = proximosPagamentos;
+                document.getElementById('total-assinaturas').textContent = assinaturas.length;
+            } catch (error) {
+                console.error('Erro ao carregar assinaturas:', error);
+                lista.innerHTML = '<p class="text-red-500 text-center py-8">Erro ao carregar assinaturas.</p>';
+                showNotification('Erro ao carregar assinaturas.', 'error');
+            }
+        }
+
+        carregarAssinaturas();
+    </script>
+</body>
+</html>
