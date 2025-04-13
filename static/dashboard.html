@@ -16,12 +16,21 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .subscription-card {
             transition: all 0.2s ease-in-out;
         }
         .subscription-card:hover {
             transform: translateY(-2px);
+        }
+        main {
+            flex: 1;
+        }
+        footer {
+            margin-top: auto;
         }
     </style>
 </head>
